@@ -11,6 +11,7 @@ Welcome to money's documentation!
    :hidden:
 
    data
+   api
 
 
 Indices and tables
