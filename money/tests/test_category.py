@@ -1,5 +1,32 @@
 import pytest
+import pandas as pd
 from .. import category
+
+
+def test_categorize():
+    """Tests category.categorize.
+
+    Tests that:
+    - Function returns a series.
+    - Result has categories from ``categories`` and ``edits``.
+    - Result preserves the input series index.
+
+    """
+    series = pd.Series(["blah", "COFFEE 001", "stuff"], index=[10, 11, 12])
+    categories = {"coffee": [r"COFFEE \d+"]}
+    edits = {12: "misc"}
+    result = category.categorize(series, categories, edits=edits)
+    assert type(result) == pd.Series
+    assert result.to_list() == [None, "coffee", "misc"]
+    assert result.index.to_list() == [10, 11, 12]
+
+
+def test_categorize_row():
+    row = pd.Series(["1", "COFFEE 001"])
+    categories = {"coffee": [r"COFFEE \d+"]}
+    edits = {1: "misc"}
+    result = category.categorize_row(row, categories, edits=edits)
+    assert result == "coffee"
 
 
 def test_list_candidates():
