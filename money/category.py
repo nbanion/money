@@ -1,4 +1,78 @@
 """Utilities for categorizing transactions.
+
+This module provides functionality for categorizing series__ of transactions
+using regex-based categorization schemes and index-specific manual edits. It is
+useful for categorizing transactions and for validating categorizations.
+
+__ https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html
+
+The module has the following high-level functions. These functions take series
+and categorization instructions, and they return new series.
+
+- :func:`category.categorize` applies a category to each item.
+- :func:`category.count_candidates` counts candidate categories for each item.
+
+These high-level functions take a series of transaction descriptions, they
+use these transaction descriptions and their indices to assign categories.
+
+The functions use two other inputs to assign cateogies. The first is a dict of
+catergories. The keys in this dict are categories, and the values are lists of
+regular expressions. If a description fully matches any of the regular
+expressions, then it fits the category. An example category dict: ::
+
+    {"cat0": ["re0", ...], ...}
+
+The second input is a dict of index-specific manual edits. The keys in this dict
+are indices, and the values are categories to assign. For example: ::
+
+    {0: "cat0", ...}
+
+In this example, we start by defining a series, categories, and edits. ::
+
+    import pandas as pd
+    import category
+
+    # Series of descriptions. Changing the index for demonstration.
+    series = pd.Series(["blah", "COFFEE 001", "stuff"],
+                       index=[10, 11, 12])
+
+    # Categories with regular expressions.
+    categories = {"coffee": [r"COFFEE \\d+"]}
+
+    # Index-specific manual categorizations.
+    edits = {11: "misc", 12: "misc"}
+
+Next, we apply categories to the series. Note how the second transaction
+description is recognized as coffee, and the third transaction is hard coded as
+miscellaneous. As the second transaction shows, the algorithm favors regex
+matches over hard codes. ::
+
+    category.categorize(series, categories, edits=edits)
+    # 10      None
+    # 11    coffee
+    # 12      misc
+
+Ideally, the algorithm shouldn't have to make a choice; each transaction should
+have one and only one category. When we test this condition, we can see that
+the first transaction has no categories, and the second transaction has two
+categories. We might want to address these cases before analysis. ::
+
+    category.count_candidates(series, categories, edits=edits)
+    # 10    0
+    # 11    2
+    # 12    1
+
+Each high-level function has a companion ``row_*`` function that applies an
+algorithm to each value in the series. :func:`category.row_list_candidates` does
+most of the categorizing work.
+
+The high-level functions use :func:`category.apply_to_series_using_index` to
+apply the ``row_*`` functions in a way that exposes the series index.
+
+To do
+- Organize functions.
+- Remove duplication from docstrings.
+- Remove duplication from test functions.
 """
 import pandas as pd
 import re
