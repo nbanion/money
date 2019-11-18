@@ -21,11 +21,11 @@ def test_categorize():
     assert result.index.to_list() == [10, 11, 12]
 
 
-def test_categorize_row():
+def test_row_categorize():
     row = pd.Series([1, "COFFEE 001"])
     categories = {"coffee": [r"COFFEE \d+"]}
     edits = {1: "misc"}
-    result = category.categorize_row(row, categories, edits=edits)
+    result = category.row_categorize(row, categories, edits=edits)
     assert result == "coffee"
 
 

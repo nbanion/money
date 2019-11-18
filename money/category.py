@@ -36,7 +36,7 @@ def apply_to_series_using_index(f, series, *args, **kwargs):
 def categorize(series, categories, edits=None):
     """Assign categories for a series of transaction descriptions.
 
-    This function applies :func:`category.categorize_row` to every value
+    This function applies :func:`category.row_categorize` to every value
     in a ``series``, creating a series of categories with the same index.
 
     Arguments:
@@ -48,11 +48,11 @@ def categorize(series, categories, edits=None):
         A Pandas Series with categories.
 
     """
-    return apply_to_series_using_index(categorize_row, series,
+    return apply_to_series_using_index(row_categorize, series,
                                        categories, edits=edits)
 
 
-def categorize_row(row, categories, edits=None):
+def row_categorize(row, categories, edits=None):
     """Categorize one indexed transaction "row".
 
     The function arbitrarily returns the first candidate category assigned to
