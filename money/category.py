@@ -40,7 +40,7 @@ def categorize(series, categories, edits=None):
     in a ``series``, creating a series of categories with the same index.
 
     Arguments:
-        series: Pandas Series of transaction descriptions.
+        series: Length 2 iterable of transaction descriptions.
         categories (dict): Regex patterns for each category.
         edits (dict): Index-specific manual categorizations.
 
@@ -79,7 +79,7 @@ def row_categorize(row, categories, edits=None):
     one category. In practice, it's a good idea to test this assumption.
 
     Arguments:
-        row: Pandas Series with an index and a description.
+        row: Length 2 iterable with an index and a description.
         categories (dict): Regex patterns for each category.
         edits (dict): Index-specific manual categorizations.
 
