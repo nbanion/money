@@ -70,41 +70,11 @@ The high-level functions use :func:`category.apply_to_series_using_index` to
 apply the ``row_*`` functions in a way that exposes the series index.
 
 To do
-- Organize functions.
 - Remove duplication from docstrings.
 - Remove duplication from test functions.
 """
 import pandas as pd
 import re
-
-
-def apply_to_series_using_index(f, series, *args, **kwargs):
-    """Apply a function to a series, make the series index available.
-
-    The function converts the ``series`` to a two-column data frame with the
-    series index as a column, so that function ``f`` can process the index when
-    doing its job. Afterward, the data frame returns to a series with the
-    original index intact. See `Stack Overflow`__.
-
-    __ https://stackoverflow.com/a/18316830
-
-    This function could be written as a wrapper for ``f``, but it becomes
-    unclear while glancing at the arguments of ``f`` whether it should take a
-    series or a row as its first argument. The current approach is transparent.
-
-    Arguments:
-        f (function): Function to apply to the series.
-        series: Pandas Series to have the function applied.
-        *args: Additional positional argmunents for ``f``.
-        **kwargs: Additional keyword arguments for ``f``.
-
-    Returns:
-        A Pandas series with the function applied.
-
-    """
-    result = (series.reset_index()
-                    .apply(f, axis=1, args=args, **kwargs))
-    return pd.Series(result.values, index=series.index)
 
 
 def categorize(series, categories, edits=None):
@@ -210,6 +180,35 @@ def row_list_candidates(row, categories, edits=None):
         if category:
             candidates.append(category)
     return candidates
+
+
+def apply_to_series_using_index(f, series, *args, **kwargs):
+    """Apply a function to a series, make the series index available.
+
+    The function converts the ``series`` to a two-column data frame with the
+    series index as a column, so that function ``f`` can process the index when
+    doing its job. Afterward, the data frame returns to a series with the
+    original index intact. See `Stack Overflow`__.
+
+    __ https://stackoverflow.com/a/18316830
+
+    This function could be written as a wrapper for ``f``, but it becomes
+    unclear while glancing at the arguments of ``f`` whether it should take a
+    series or a row as its first argument. The current approach is transparent.
+
+    Arguments:
+        f (function): Function to apply to the series.
+        series: Pandas Series to have the function applied.
+        *args: Additional positional argmunents for ``f``.
+        **kwargs: Additional keyword arguments for ``f``.
+
+    Returns:
+        A Pandas series with the function applied.
+
+    """
+    result = (series.reset_index()
+                    .apply(f, axis=1, args=args, **kwargs))
+    return pd.Series(result.values, index=series.index)
 
 
 def is_match(string, patterns):
