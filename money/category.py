@@ -52,6 +52,25 @@ def categorize(series, categories, edits=None):
                                        categories, edits=edits)
 
 
+def count_candidates(series, categories, edits=None):
+    """Count candidate categories for a series of transaction descriptions.
+
+    This function applies :func:`category.row_count_candidates` to every value
+    in a ``series``, creating a series of counts with the same index.
+
+    Arguments:
+        series: Length 2 iterable of transaction descriptions.
+        categories (dict): Regex patterns for each category.
+        edits (dict): Index-specific manual categorizations.
+
+    Returns:
+        A Pandas Series with counts.
+
+    """
+    return apply_to_series_using_index(row_count_candidates,
+                                       series, categories, edits=edits)
+
+
 def row_categorize(row, categories, edits=None):
     """Categorize one indexed transaction "row".
 
@@ -71,6 +90,22 @@ def row_categorize(row, categories, edits=None):
     candidates = row_list_candidates(row, categories, edits=edits)
     if candidates:
         return candidates[0]
+
+
+def row_count_candidates(row, categories, edits=None):
+    """Count candidate categories for one indexed transaction "row".
+
+    Arguments:
+        row: Length 2 iterable with an index and a description.
+        categories (dict): Regex patterns for each category.
+        edits (dict): Index-specific manual categorizations.
+
+    Returns:
+        int: Number of candidate categoires for the row.
+
+    """
+    candidates = row_list_candidates(row, categories, edits=edits)
+    return len(candidates)
 
 
 def row_list_candidates(row, categories, edits=None):
