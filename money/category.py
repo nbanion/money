@@ -55,13 +55,9 @@ def categorize(series, categories, edits=None):
 def categorize_row(row, categories, edits=None):
     """Categorize one indexed transaction "row".
 
-    Each row has two fields. The first is the transaction index, and the second
-    is the transaction description. This function uses the index to assign
-    manual category edits to specific transactions.
-
     The function arbitrarily returns the first candidate category assigned to
     the row. It's written with the expectation that each row *should* only fit
-    one category.
+    one category. In practice, it's a good idea to test this assumption.
 
     Arguments:
         row: Pandas Series with an index and a description.
@@ -72,38 +68,37 @@ def categorize_row(row, categories, edits=None):
         str: A category for the row.
 
     """
-    index, description = row
-    candidates = list_candidates(description, categories)
-    if edits:
-        category = edits.get(index)
-        if category:
-            candidates.append(category)
+    candidates = row_list_candidates(row, categories, edits=edits)
     if candidates:
         return candidates[0]
 
 
-def list_candidates(string, categories):
-    """Find candidate categories for a string.
+def row_list_candidates(row, categories, edits=None):
+    """Identify candidate categories for one indexed transaction "row".
 
-    If ``string`` matches any of the regular expressions associated with a
-    category from ``categories``, then this function includes that category as a
-    candidate category for the string.
+    Each row has two fields. The first is the transaction index, and the second
+    is the transaction description. This function uses the index to assign
+    manual category edits to specific transactions.
 
     Arguments:
-        string (str): String to categorize.
-        categories (dict): Regex patterns for each category. ::
-
-            {"cat0": ["re0", ...] ...}
+        row: Length 2 iterable with an index and a description.
+        categories (dict): Regex patterns for each category.
+        edits (dict): Index-specific manual categorizations.
 
     Returns:
-        list: Candidate categories for the string. ::
-
-            ["cat0", ...]
+        list: Candidate categories for the row.
 
     """
+    index, description = row
     candidates = []
+    # Pattern match descriptions to categories.
     for category, patterns in categories.items():
-        if is_match(string, patterns):
+        if is_match(description, patterns):
+            candidates.append(category)
+    # Apply index-specific manual categorizations.
+    if edits:
+        category = edits.get(index)
+        if category:
             candidates.append(category)
     return candidates
 

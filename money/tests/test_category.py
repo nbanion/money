@@ -22,17 +22,19 @@ def test_categorize():
 
 
 def test_categorize_row():
-    row = pd.Series(["1", "COFFEE 001"])
+    row = pd.Series([1, "COFFEE 001"])
     categories = {"coffee": [r"COFFEE \d+"]}
     edits = {1: "misc"}
     result = category.categorize_row(row, categories, edits=edits)
     assert result == "coffee"
 
 
-def test_list_candidates():
-    string = "COFFEE 001"
-    categories = {"coffee": [r"COFFEE \d+"], "groceries": ["blah"]}
-    assert category.list_candidates(string, categories) == ["coffee"]
+def test_row_list_candidates():
+    row = pd.Series([1, "COFFEE 001"])
+    categories = {"coffee": [r"COFFEE \d+"]}
+    edits = {1: "misc"}
+    result = category.row_list_candidates(row, categories, edits=edits)
+    assert result == ["coffee", "misc"]
 
 
 def test_is_match():
