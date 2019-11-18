@@ -4,18 +4,40 @@ import pandas as pd
 import re
 
 
-def categorize(series, categories, edits=None):
-    """Categorize transaction descriptions.
-
-    This function applies :func:`category.categorize_row` to every value
-    in a ``series``, creating a series of categories with the same index.
+def apply_to_series_using_index(f, series, *args, **kwargs):
+    """Apply a function to a series, make the series index available.
 
     The function converts the ``series`` to a two-column data frame with the
-    series index as a column, so that the function can process the index when
-    assigning categories. Afterward, the data frame returns to a series with the
+    series index as a column, so that function ``f`` can process the index when
+    doing its job. Afterward, the data frame returns to a series with the
     original index intact. See `Stack Overflow`__.
 
     __ https://stackoverflow.com/a/18316830
+
+    This function could be written as a wrapper for ``f``, but it becomes
+    unclear while glancing at the arguments of ``f`` whether it should take a
+    series or a row as its first argument. The current approach is transparent.
+
+    Arguments:
+        f (function): Function to apply to the series.
+        series: Pandas Series to have the function applied.
+        *args: Additional positional argmunents for ``f``.
+        **kwargs: Additional keyword arguments for ``f``.
+
+    Returns:
+        A Pandas series with the function applied.
+
+    """
+    result = (series.reset_index()
+                    .apply(f, axis=1, args=args, **kwargs))
+    return pd.Series(result.values, index=series.index)
+
+
+def categorize(series, categories, edits=None):
+    """Assign categories for a series of transaction descriptions.
+
+    This function applies :func:`category.categorize_row` to every value
+    in a ``series``, creating a series of categories with the same index.
 
     Arguments:
         series: Pandas Series of transaction descriptions.
@@ -26,12 +48,8 @@ def categorize(series, categories, edits=None):
         A Pandas Series with categories.
 
     """
-    return pd.Series(series.reset_index()
-                           .apply(categorize_row, axis=1,
-                                  args=(categories,),
-                                  edits=edits)
-                           .values,
-                     index=series.index)
+    return apply_to_series_using_index(categorize_row, series,
+                                       categories, edits=edits)
 
 
 def categorize_row(row, categories, edits=None):
