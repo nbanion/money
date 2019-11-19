@@ -12,7 +12,7 @@ and categorization instructions, and they return new series.
 - :func:`category.categorize` applies a category to each item.
 - :func:`category.count_candidates` counts candidate categories for each item.
 
-These high-level functions take a series of transaction descriptions, they
+These high-level functions take a series of transaction descriptions, and they
 use these transaction descriptions and their indices to assign categories.
 
 The functions use two other inputs to assign cateogies. The first is a dict of
@@ -69,9 +69,6 @@ most of the categorizing work.
 The high-level functions use :func:`category.apply_to_series_using_index` to
 apply the ``row_*`` functions in a way that exposes the series index.
 
-To do
-- Remove duplication from docstrings.
-- Remove duplication from test functions.
 """
 import pandas as pd
 import re
@@ -183,7 +180,7 @@ def row_list_candidates(row, categories, edits=None):
 
 
 def apply_to_series_using_index(f, series, *args, **kwargs):
-    """Apply a function to a series, make the series index available.
+    """Apply a function to a series, making the series index available.
 
     The function converts the ``series`` to a two-column data frame with the
     series index as a column, so that function ``f`` can process the index when
