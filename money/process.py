@@ -70,4 +70,8 @@ def categories(budget):
         A dict of categories.
 
     """
-    pass
+    categories = dict()
+    for item in budget:
+        if item["patterns"]:
+            categories[item["name"]] = item["patterns"]
+    return categories
