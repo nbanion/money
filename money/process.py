@@ -34,7 +34,7 @@ def prep_credit(df, categories, edits=None):
     """Prepare credit card transaction data for processing.
 
     Arguments:
-        df (str): Pandas dataframe with transaction data.
+        df : Pandas dataframe with transaction data.
         categories (dict): Regex patterns for each category.
         edits (dict): Index-specific manual categorizations.
 
@@ -49,7 +49,7 @@ def prep_checking(df, categories, edits=None):
     """Prepare checking transaction data for processing.
 
     Arguments:
-        df (str): Pandas dataframe with transaction data.
+        df : Pandas dataframe with transaction data.
         categories (dict): Regex patterns for each category.
         edits (dict): Index-specific manual categorizations.
 
