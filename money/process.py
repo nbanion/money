@@ -32,7 +32,44 @@ def process(credit_paths, checking_paths, budget_path):
     pass
 
 
-def prep_credit(df, categories, edits=None, source=None):
+def assemble(bundles, categories):
+    """Prepare and combine credit and checking transactions.
+
+    Each of the ``bundles`` is a dict representing a source
+    dataframe. Each dict contains the dataframe, the data source, the prep
+    method type to use, and any individual edits to apply. ::
+
+        {
+            "df": pd.DataFrame(...),
+            "source": "credit000.csv"
+            "type": "credit",
+            "edits": {1: "cat1", ...}
+        }
+
+    This function stacks the input dataframes and assigns a two-level index to
+    the result, with cases grouped by source and by the source data indices.
+
+    Arguments:
+        bundles (list): Dicts representing source datasets.
+        categories (dict): Regex patterns for each category.
+
+    """
+    prep_functions = {
+        "credit": prep_credit,
+        "checking": prep_checking
+    }
+
+    frames = []
+    for b in bundles:
+        prep_function = prep_functions[b["type"]]
+        prepped = (b["df"].pipe(prep_function, categories, edits=b["edits"]))
+        frames.append(prepped)
+
+    keys = [b["source"] for b in bundles]
+    return pd.concat(frames, keys=keys, names=["source", "item"])
+
+
+def prep_credit(df, categories, edits=None):
     """Prepare credit card transaction data for processing.
 
     The input dataset includes columns "Transaction Date" and "Post Date". The
@@ -44,7 +81,6 @@ def prep_credit(df, categories, edits=None, source=None):
         df : Pandas dataframe with transaction data.
         categories (dict): Regex patterns for each category.
         edits (dict): Index-specific manual categorizations.
-        source (str): Data source, to be included as a variable.
 
     Returns:
         A Pandas dataframe of prepped data.
@@ -55,17 +91,16 @@ def prep_credit(df, categories, edits=None, source=None):
         "desc": "Description",
         "amount": "Amount"
     }
-    return prep_transactions(df, cols, categories, edits=edits, source=source)
+    return prep_transactions(df, cols, categories, edits=edits)
 
 
-def prep_checking(df, categories, edits=None, source=None):
+def prep_checking(df, categories, edits=None):
     """Prepare checking transaction data for processing.
 
     Arguments:
         df : Pandas dataframe with transaction data.
         categories (dict): Regex patterns for each category.
         edits (dict): Index-specific manual categorizations.
-        source (str): Data source, to be included as a variable.
 
     Returns:
         A Pandas dataframe of prepped data.
@@ -76,10 +111,10 @@ def prep_checking(df, categories, edits=None, source=None):
         "desc": "Description",
         "amount": "Amount"
     }
-    return prep_transactions(df, cols, categories, edits=edits, source=source)
+    return prep_transactions(df, cols, categories, edits=edits)
 
 
-def prep_transactions(df, cols, categories, edits=None, source=None):
+def prep_transactions(df, cols, categories, edits=None):
     """Prepare transaction data for processing.
 
     This function performs the following transformations:
@@ -88,7 +123,6 @@ def prep_transactions(df, cols, categories, edits=None, source=None):
     - Rename columns with shorter, standardized names.
     - Reverse the index to start with the earliest transaction.
     - Update variable ``date`` to have the datetime dtype.
-    - Add variable ``source`` to document the transaction source.
     - Add variable ``category`` to categorize the transaction.
 
     Argument ``cols`` is a dict with the following keys:
@@ -111,7 +145,6 @@ def prep_transactions(df, cols, categories, edits=None, source=None):
         cols (dict): Columns to process from the source ``df``.
         categories (dict): Regex patterns for each category.
         edits (dict): Index-specific manual categorizations.
-        source (str): Data source, to be included as a variable.
 
     Returns:
         A Pandas dataframe of prepped transaction data.
@@ -123,7 +156,6 @@ def prep_transactions(df, cols, categories, edits=None, source=None):
     return (df.loc[:, keeps]
               .rename(columns=renames)
               .set_index(df.index[::-1])  # Reverse index.
-              .assign(source=source)
               .assign(date=lambda x: pd.to_datetime(x["date"]))
               .assign(category=lambda x: cg.categorize(x["desc"],
                                                        categories,
