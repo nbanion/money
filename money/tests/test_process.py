@@ -5,9 +5,15 @@ from .. import process as prc
 
 
 @pytest.fixture
-def raw_credit():
+def categories():
+    """Category set to use for testing."""
+    return {"cat0": ["item0"]}
+
+
+@pytest.fixture
+def credit_bundle():
     """Raw credit card dataframe."""
-    data_df = {
+    data = {
         "Transaction Date": ("01/02/2019", "01/01/2019"),
         "Post Date": ("01/03/2019", "01/02/2019"),
         "Description": ("item1", "item0"),
@@ -15,13 +21,18 @@ def raw_credit():
         "Type": ("sale", "sale"),
         "Amount": (-10, -10)
     }
-    return pd.DataFrame(data_df)
+    bundle = dict()
+    bundle["df"] = pd.DataFrame(data)
+    bundle["source"] = "credit0"
+    bundle["type"] = "credit"
+    bundle["edits"] = {1: "cat1"}
+    return bundle
 
 
 @pytest.fixture
-def raw_checking():
+def checking_bundle():
     """Raw chekcing dataframe."""
-    data_df = {
+    data = {
         "Details": ("DEBIT", "DEBIT"),
         "Posting Date": ("01/02/2019", "01/01/2019"),
         "Description": ("item1", "item0"),
@@ -30,7 +41,12 @@ def raw_checking():
         "Balance": (100, 110),
         "Check or Slip #": (None, None)
     }
-    return pd.DataFrame(data_df)
+    bundle = dict()
+    bundle["df"] = pd.DataFrame(data)
+    bundle["source"] = "checking0"
+    bundle["type"] = "checking"
+    bundle["edits"] = {1: "cat1"}
+    return bundle
 
 
 @pytest.fixture
@@ -45,29 +61,27 @@ def expected_prep_result():
     return pd.DataFrame(data)[::-1]
 
 
-def test_assemble(raw_credit, raw_checking, expected_prep_result):
-    bundles = [
-        {"df": raw_credit, "source": "s0", "type": "credit", "edits": {1: "cat1"}},
-        {"df": raw_checking, "source": "s1", "type": "checking", "edits": {1: "cat1"}},
-    ]
-    categories = {"cat0": ["item0"]}
+def test_assemble(credit_bundle, checking_bundle,
+                  categories, expected_prep_result):
+    bundles = [credit_bundle, checking_bundle]
     result = prc.assemble(bundles, categories)
     expected = pd.concat([expected_prep_result, expected_prep_result],
-                         keys=["s0", "s1"], names=["source", "item"])
+                         keys=["credit0", "checking0"],
+                         names=["source", "item"])
     pdt.assert_frame_equal(result, expected)
 
 
-def test_prep_credit(raw_credit, expected_prep_result):
-    categories = {"cat0": ["item0"]}
-    edits = {1: "cat1"}
-    result = prc.prep_credit(raw_credit, categories, edits=edits)
+def test_prep_credit(credit_bundle, categories, expected_prep_result):
+    df = credit_bundle["df"]
+    edits = credit_bundle["edits"]
+    result = prc.prep_credit(df, categories, edits=edits)
     pdt.assert_frame_equal(result, expected_prep_result)
 
 
-def test_prep_checking(raw_checking, expected_prep_result):
-    categories = {"cat0": ["item0"]}
-    edits = {1: "cat1"}
-    result = prc.prep_checking(raw_checking, categories, edits=edits)
+def test_prep_checking(checking_bundle, categories, expected_prep_result):
+    df = checking_bundle["df"]
+    edits = checking_bundle["edits"]
+    result = prc.prep_checking(df, categories, edits=edits)
     pdt.assert_frame_equal(result, expected_prep_result)
 
 
