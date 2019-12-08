@@ -11,25 +11,56 @@ Notes:
     - Processing configurations.
 
 """
+import os.path
 import pandas as pd
+import yaml
 from . import category as cg
 
 
-def process(credit_paths, checking_paths, budget_path):
-    """Process raw transaction data.
+def process(bundles, budget_path):
+    """Process raw transaction data saved on disk.
+
+    This function reads files from the paths given in the arguements and uses
+    helper functions to do the processing.
+
+    Each of the ``bundles`` is a dict representing a data source. Each dict
+    contains the transaction type, a path to the CSV data, and a path to any
+    individual category edits for the data. ::
+
+        [
+            {
+                "type": "credit",
+                "path": "credit000.csv",
+                "edits_path": "credit000.yaml"
+            },
+            ...
+        ]
+
+    This function adds some keys to each bundle so that
+    :func:`process.assemble` can process each data source. The data source that
+    appears in the index of the resulting dataframe comes from the basename of
+    each CSV path (e.g., "credit000.csv").
+
+    The ``budget_path`` points to a budget with regex patterns to help with
+    categorizing transactions.
 
     Arguments:
-        credit_paths (list): Length 2 iterables, each with paths to a credit
-            card transaction CSV and a file with manual edits for the CSV.
-        checking_paths (list): Length 2 iterables, each with paths to a checking
-            transaction CSV and a file with manual edits for the CSV.
+        bundles (list): Dicts with paths to source data.
         budget_path (str): Path to a budget file.
 
     Returns:
         A Pandas dataframe with processed transaction data.
 
     """
-    pass
+    for b in bundles:
+        b["df"] = pd.read_csv(b["path"], index_col=False)
+        b["source"] = os.path.basename(b["path"])
+        with open(b["edits_path"]) as f:
+            b["edits"] = yaml.safe_load(f)
+    with open(budget_path) as f:
+        budget = yaml.safe_load(f)
+    categories = get_categories(budget)
+    return assemble(bundles, categories)
 
 
 def assemble(bundles, categories):
@@ -162,7 +193,7 @@ def prep_transactions(df, cols, categories, edits=None):
                                                        edits=edits)))
 
 
-def categories(budget):
+def get_categories(budget):
     """Extract a category dict from a budget.
 
     Arguments:

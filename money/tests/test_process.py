@@ -85,9 +85,9 @@ def test_prep_checking(checking_bundle, categories, expected_prep_result):
     pdt.assert_frame_equal(result, expected_prep_result)
 
 
-def test_categories():
+def test_get_categories():
     budget = [
         {"name": "cat0", "patterns": None},
         {"name": "cat1", "patterns": ["re0", "re1"]}
     ]
-    assert prc.categories(budget) == {"cat1": ["re0", "re1"]}
+    assert prc.get_categories(budget) == {"cat1": ["re0", "re1"]}
