@@ -1,14 +1,41 @@
 """Utilities for processing raw data.
 
-Notes:
+This module makes it easy to read raw transaction data from disk, standardize
+columns from different sources, apply transaction categories, and prepare a
+unified transaction dataset for analysis.
 
-- Top level functions.
-- Usage and example.
-- Describe need to harmonize credit and checking data.
-- Document and link to commonly used special data structures.
-    - Budget / categories.
-    - Edits.
-    - Processing configurations.
+The main high level function is :func:`process.process`. This function takes
+paths to the data inputs and returns a processed dataset.
+
+This function takes "bundles" of information about each transaction data source.
+Each of the bundles is a dict containing the transaction type, a path to the CSV
+data, and a path to any individual category edits for the data. ::
+
+    [
+        {
+            "type": "credit",
+            "path": "credit000.csv",
+            "edits_path": "credit000.yaml"
+        },
+        ...
+    ]
+
+Users can create config files that serialize specific bundles they use often.
+Then they can easily load specific data with this function.
+
+This function also takes the path to a budget, which has regex patterns to help
+with categorizing transactions.
+
+Function :func:`process.prep_transactions` standarizes individual transaction
+datasets before combining them. This function has multiple wrappers that
+customize its behavior for different data sources. The list of wrappers could
+grow with the addition of any new data sources.
+
+- :func:`process.prep_credit`: Wrapper for credit card transactions.
+- :func:`process.prep_checking`: Wrapper for checking transactions.
+
+Function :func:`process.assemble` concatenates the standard datasets and assigns
+an index that identifies each transaction by its source and transaction number.
 
 """
 import os.path
@@ -23,23 +50,10 @@ def process(bundles, budget_path):
     This function reads files from the paths given in the arguements and uses
     helper functions to do the processing.
 
-    Each of the ``bundles`` is a dict representing a data source. Each dict
-    contains the transaction type, a path to the CSV data, and a path to any
-    individual category edits for the data. ::
-
-        [
-            {
-                "type": "credit",
-                "path": "credit000.csv",
-                "edits_path": "credit000.yaml"
-            },
-            ...
-        ]
-
-    This function adds some keys to each bundle so that
+    The function adds some new items to each of the ``bundles`` so that
     :func:`process.assemble` can process each data source. The data source that
     appears in the index of the resulting dataframe comes from the basename of
-    each CSV path (e.g., "credit000.csv").
+    the CSV path in each bundle (e.g., "credit000.csv").
 
     The ``budget_path`` points to a budget with regex patterns to help with
     categorizing transactions.
@@ -66,9 +80,9 @@ def process(bundles, budget_path):
 def assemble(bundles, categories):
     """Prepare and combine credit and checking transactions.
 
-    Each of the ``bundles`` is a dict representing a source
-    dataframe. Each dict contains the dataframe, the data source, the prep
-    method type to use, and any individual edits to apply. ::
+    Each of the ``bundles`` is a dict representing a source dataframe. Each dict
+    contains the dataframe, the data source, the prep method type to use, and
+    any individual edits to apply. ::
 
         {
             "df": pd.DataFrame(...),
