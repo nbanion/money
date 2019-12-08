@@ -4,8 +4,8 @@ This module makes it easy to read raw transaction data from disk, standardize
 columns from different sources, apply transaction categories, and prepare a
 unified transaction dataset for analysis.
 
-The main high level function is :func:`process.process`. This function takes
-paths to the data inputs and returns a processed dataset.
+The main high level function is :func:`money.process.process`. This function
+takes paths to the data inputs and returns a processed dataset.
 
 This function takes "bundles" of information about each transaction data source.
 Each of the bundles is a dict containing the transaction type, a path to the CSV
@@ -26,16 +26,16 @@ Then they can easily load specific data with this function.
 This function also takes the path to a budget, which has regex patterns to help
 with categorizing transactions.
 
-Function :func:`process.prep_transactions` standarizes individual transaction
-datasets before combining them. This function has multiple wrappers that
-customize its behavior for different data sources. The list of wrappers could
-grow with the addition of any new data sources.
+Function :func:`money.process.prep_transactions` standarizes individual
+transaction dataframes before combining them. This function has multiple
+wrappers that customize its behavior for different data sources. The list of
+wrappers could grow with the addition of any new data sources.
 
-- :func:`process.prep_credit`: Wrapper for credit card transactions.
-- :func:`process.prep_checking`: Wrapper for checking transactions.
+- :func:`money.process.prep_credit`: Wrapper for credit card transactions.
+- :func:`money.process.prep_checking`: Wrapper for checking transactions.
 
-Function :func:`process.assemble` concatenates the standard datasets and assigns
-an index that identifies each transaction by its source and transaction number.
+Function :func:`money.process.assemble` concatenates the standard datasets and
+assigns an index to identify each transaction by its source and source index.
 
 """
 import os.path
@@ -51,9 +51,9 @@ def process(bundles, budget_path):
     helper functions to do the processing.
 
     The function adds some new items to each of the ``bundles`` so that
-    :func:`process.assemble` can process each data source. The data source that
-    appears in the index of the resulting dataframe comes from the basename of
-    the CSV path in each bundle (e.g., "credit000.csv").
+    :func:`mony.process.assemble` can process each data source. The data source
+    that appears in the index of the resulting dataframe comes from the basename
+    of the CSV path in each bundle (e.g., "credit000.csv").
 
     The ``budget_path`` points to a budget with regex patterns to help with
     categorizing transactions.
