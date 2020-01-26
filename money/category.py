@@ -9,8 +9,8 @@ __ https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html
 The module has the following high-level functions. These functions take series
 and categorization instructions, and they return new series.
 
-- :func:`category.categorize` applies a category to each item.
-- :func:`category.count_candidates` counts candidate categories for each item.
+- :func:`money.category.categorize` applies a category to each item.
+- :func:`money.category.count_candidates` counts candidate categories by item.
 
 These high-level functions take a series of transaction descriptions, and they
 use these transaction descriptions and their indices to assign categories.
@@ -63,11 +63,11 @@ categories. We might want to address these cases before analysis. ::
     # 12    1
 
 Each high-level function has a companion ``row_*`` function that applies an
-algorithm to each value in the series. :func:`category.row_list_candidates` does
-most of the categorizing work.
+algorithm to each value in the series.
+:func:`money.category.row_list_candidates` does most of the categorizing work.
 
-The high-level functions use :func:`category.apply_to_series_using_index` to
-apply the ``row_*`` functions in a way that exposes the series index.
+The high-level functions use :func:`money.category.apply_to_series_using_index`
+to apply the ``row_*`` functions in a way that exposes the series index.
 
 """
 import pandas as pd
@@ -77,7 +77,7 @@ import re
 def categorize(series, categories, edits=None):
     """Assign categories for a series of transaction descriptions.
 
-    This function applies :func:`category.row_categorize` to every value
+    This function applies :func:`money.category.row_categorize` to every value
     in a ``series``, creating a series of categories with the same index.
 
     Arguments:
@@ -96,8 +96,8 @@ def categorize(series, categories, edits=None):
 def count_candidates(series, categories, edits=None):
     """Count candidate categories for a series of transaction descriptions.
 
-    This function applies :func:`category.row_count_candidates` to every value
-    in a ``series``, creating a series of counts with the same index.
+    This function applies :func:`money.category.row_count_candidates` to every
+    value in a ``series``, creating a series of counts with the same index.
 
     Arguments:
         series: Length 2 iterable of transaction descriptions.

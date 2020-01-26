@@ -11,7 +11,8 @@ Welcome to money's documentation!
    :hidden:
 
    data
-   api
+   category
+   process
 
 
 Indices and tables
